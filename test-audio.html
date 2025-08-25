@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #00b4db 0%, #00d4aa 100%);
+            color: white;
+        }
+        .test-button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Audio Test Page</h1>
+    
+    <div class="status">
+        <h3>Audio Status:</h3>
+        <div id="audioStatus">Ready to test</div>
+    </div>
+    
+    <div>
+        <button class="test-button" onclick="testAudio('audio/background.mp3', 'Background')">Test Background.mp3</button>
+        <button class="test-button" onclick="testAudio('audio/me.mp3', 'Me')">Test Me.mp3</button>
+        <button class="test-button" onclick="testAudio('audio/happybirthday.mp3', 'Happy Birthday')">Test HappyBirthday.mp3</button>
+    </div>
+    
+    <div>
+        <button class="test-button" onclick="playAll()">Play All Sequentially</button>
+        <button class="test-button" onclick="stopAll()">Stop All</button>
+    </div>
+    
+    <div class="status">
+        <h3>Console Log:</h3>
+        <div id="consoleLog" style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; font-family: monospace; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        let currentAudio = null;
+        let audioQueue = [];
+        let isPlaying = false;
+        
+        function log(message) {
+            const consoleLog = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleLog.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleLog.scrollTop = consoleLog.scrollTop + 1000;
+            console.log(message);
+        }
+        
+        function testAudio(filePath, name) {
+            log(`Testing ${name} from ${filePath}`);
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            currentAudio = new Audio(filePath);
+            
+            currentAudio.addEventListener('loadstart', () => log(`${name}: Load started`));
+            currentAudio.addEventListener('canplay', () => log(`${name}: Can play`));
+            currentAudio.addEventListener('canplaythrough', () => log(`${name}: Can play through`));
+            currentAudio.addEventListener('playing', () => log(`${name}: Playing`));
+            currentAudio.addEventListener('ended', () => log(`${name}: Ended`));
+            currentAudio.addEventListener('error', (e) => log(`${name}: Error - ${e.target.error ? e.target.error.message : 'Unknown error'}`));
+            
+            currentAudio.play().then(() => {
+                log(`${name}: Successfully started playing`);
+                document.getElementById('audioStatus').innerHTML = `Playing: ${name}`;
+            }).catch(error => {
+                log(`${name}: Failed to play - ${error.message}`);
+                document.getElementById('audioStatus').innerHTML = `Failed: ${name} - ${error.message}`;
+            });
+        }
+        
+        function playAll() {
+            const files = [
+                { path: 'audio/background.mp3', name: 'Background' },
+                { path: 'audio/me.mp3', name: 'Me' },
+                { path: 'audio/happybirthday.mp3', name: 'Happy Birthday' }
+            ];
+            
+            audioQueue = [...files];
+            isPlaying = true;
+            playNextInQueue();
+        }
+        
+        function playNextInQueue() {
+            if (!isPlaying || audioQueue.length === 0) {
+                isPlaying = false;
+                log('Queue finished');
+                return;
+            }
+            
+            const next = audioQueue.shift();
+            log(`Playing next in queue: ${next.name}`);
+            
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+            
+            currentAudio = new Audio(next.path);
+            currentAudio.addEventListener('ended', () => {
+                if (isPlaying) {
+                    playNextInQueue();
+                }
+            });
+            
+            currentAudio.play().then(() => {
+                log(`${next.name}: Playing from queue`);
+                document.getElementById('audioStatus').innerHTML = `Queue: ${next.name}`;
+            }).catch(error => {
+                log(`${next.name}: Queue error - ${error.message}`);
+                playNextInQueue();
+            });
+        }
+        
+        function stopAll() {
+            isPlaying = false;
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            audioQueue = [];
+            document.getElementById('audioStatus').innerHTML = 'Stopped';
+            log('All audio stopped');
+        }
+        
+        // Test page load
+        log('Audio test page loaded');
+        log('Click any button to test audio files');
+    </script>
+</body>
+</html>

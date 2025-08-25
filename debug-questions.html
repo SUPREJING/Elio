@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #00b4db 0%, #00d4aa 100%);
+            color: white;
+        }
+        .debug-info {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        .question-modal {
+            background: rgba(0,0,0,0.8);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 1000;
+        }
+        .question-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #0083b0 0%, #00b4db 50%, #00d4aa 100%);
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            min-width: 400px;
+        }
+        .answer-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        .yes-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        .no-btn {
+            background: #f44336;
+            color: white;
+        }
+        .why-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.3);
+            display: none;
+        }
+        .why-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .why-submit {
+            background: #ff9800;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Questions</h1>
+    
+    <div class="debug-info">
+        <h3>Debug Information:</h3>
+        <div id="debugInfo">Ready to test</div>
+    </div>
+    
+    <button onclick="startQuestions()" style="padding: 15px 30px; font-size: 16px; background: white; color: #00b4db; border: none; border-radius: 10px; cursor: pointer;">Start Questions</button>
+    
+    <!-- Question Modal -->
+    <div class="question-modal" id="questionModal">
+        <div class="question-content">
+            <div class="question-header">
+                <h3 id="questionTitle">Question 1</h3>
+                <p id="questionText">Are you happy today?</p>
+            </div>
+            
+            <div class="question-answers">
+                <button class="answer-btn yes-btn" onclick="answerQuestion('yes')">Yes 💕</button>
+                <button class="answer-btn no-btn" onclick="answerQuestion('no')">No 😢</button>
+            </div>
+            
+            <div class="why-section" id="whySection">
+                <p class="why-text">Why not? 🥺</p>
+                <input type="text" id="whyInput" placeholder="Tell me why..." class="why-input">
+                <button class="why-submit" onclick="submitWhy()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let unlockedParts = 0;
+        
+        const questions = [
+            "Are you happy today?",
+            "Did you miss me today?",
+            "Do you still love me today?"
+        ];
+        
+        function log(message) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.innerHTML += `[${timestamp}] ${message}<br>`;
+            console.log(message);
+        }
+        
+        function startQuestions() {
+            log('Starting questions...');
+            currentQuestion = 0;
+            unlockedParts = 0;
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            log(`=== SHOW QUESTION FUNCTION CALLED ===`);
+            log(`Current question index: ${currentQuestion}`);
+            log(`Total questions: ${questions.length}`);
+            log(`Question to show: ${questions[currentQuestion]}`);
+            
+            if (currentQuestion < questions.length) {
+                document.getElementById('questionTitle').textContent = `Question ${currentQuestion + 1}`;
+                document.getElementById('questionText').textContent = questions[currentQuestion];
+                document.getElementById('whySection').style.display = 'none';
+                document.getElementById('questionModal').style.display = 'block';
+                
+                // Reset text color
+                document.getElementById('questionText').style.color = "white";
+                
+                log(`Question ${currentQuestion + 1} displayed successfully`);
+            } else {
+                log('All questions answered!');
+                document.getElementById('questionModal').style.display = 'none';
+                document.getElementById('debugInfo').innerHTML += '<br><strong style="color: #4CAF50;">🎉 ALL QUESTIONS COMPLETED! 🎉</strong>';
+            }
+        }
+        
+        function answerQuestion(answer) {
+            log(`Answering question ${currentQuestion + 1} with: ${answer}`);
+            
+            if (answer === 'yes') {
+                unlockedParts++;
+                log(`Question ${currentQuestion + 1} answered correctly. Unlocked parts: ${unlockedParts}`);
+                
+                // Show success message
+                const questionText = document.getElementById('questionText');
+                questionText.textContent = "Perfect! 💕";
+                questionText.style.color = "#4CAF50";
+                
+                setTimeout(() => {
+                    document.getElementById('questionModal').style.display = 'none';
+                    currentQuestion++;
+                    log(`Moving to next question. New index: ${currentQuestion}`);
+                    
+                    if (currentQuestion >= questions.length) {
+                        log('All questions answered!');
+                        document.getElementById('debugInfo').innerHTML += '<br><strong style="color: #4CAF50;">🎉 ALL QUESTIONS COMPLETED! 🎉</strong>';
+                    } else {
+                        setTimeout(() => {
+                            showQuestion();
+                        }, 1000);
+                    }
+                }, 2000);
+                
+            } else {
+                log(`Question ${currentQuestion + 1} answered with no, showing why section`);
+                document.getElementById('whySection').style.display = 'block';
+                document.getElementById('whyInput').focus();
+            }
+        }
+        
+        function submitWhy() {
+            const whyInput = document.getElementById('whyInput');
+            const whyText = whyInput.value.trim();
+            
+            if (whyText) {
+                log(`Why submitted: ${whyText}`);
+                
+                const questionText = document.getElementById('questionText');
+                questionText.textContent = "Aww, I understand... 🥺 But please say yes next time! 💕";
+                questionText.style.color = "#ff9800";
+                
+                document.getElementById('whySection').style.display = 'none';
+                whyInput.value = '';
+                
+                setTimeout(() => {
+                    questionText.textContent = questions[currentQuestion];
+                    questionText.style.color = "white";
+                }, 3000);
+            }
+        }
+        
+        log('Debug page loaded. Click "Start Questions" to begin testing.');
+    </script>
+</body>
+</html>

@@ -535,8 +535,11 @@ body {
     
     .question-content {
         min-width: 90%;
-        margin: 20px;
+        margin: 20px auto;
         padding: 30px 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        position: relative;
     }
     
     .question-answers {

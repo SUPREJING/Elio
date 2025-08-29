@@ -129,6 +129,9 @@ document.addEventListener('DOMContentLoaded', function() {
         letterEnvelope.style.display = 'none';
         unlockedMessage.style.display = 'block';
         
+        // Clear previous content first
+        messageContent.innerHTML = '';
+        
         // Animate message parts appearing
         messageParts.forEach((part, index) => {
             setTimeout(() => {

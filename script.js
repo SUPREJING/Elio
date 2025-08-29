@@ -682,56 +682,107 @@ function initializeShakeDetection() {
     let shakeCount = 0;
     let isShaking = false;
     
+    console.log('Initializing shake detection...');
+    
     // Check if device supports motion sensors
     if (window.DeviceMotionEvent) {
-        window.addEventListener('devicemotion', function(event) {
-            const current = event.accelerationIncludingGravity;
-            if (!current) return;
-            
-            const curTime = new Date().getTime();
-            if ((curTime - lastUpdate) > 100) {
-                const diffTime = curTime - lastUpdate;
-                lastUpdate = curTime;
+        console.log('DeviceMotionEvent supported');
+        
+        // Request permission for iOS
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+            console.log('Requesting motion permission...');
+            DeviceMotionEvent.requestPermission()
+                .then(permissionState => {
+                    console.log('Motion permission:', permissionState);
+                    if (permissionState === 'granted') {
+                        startMotionDetection();
+                    }
+                })
+                .catch(console.error);
+        } else {
+            startMotionDetection();
+        }
+        
+        function startMotionDetection() {
+            window.addEventListener('devicemotion', function(event) {
+                const current = event.accelerationIncludingGravity;
+                if (!current) return;
                 
-                const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
-                
-                if (speed > 800 && !isShaking) {
-                    isShaking = true;
-                    shakeCount++;
-                    triggerShakeEffect();
+                const curTime = new Date().getTime();
+                if ((curTime - lastUpdate) > 50) { // Reduced from 100ms
+                    const diffTime = curTime - lastUpdate;
+                    lastUpdate = curTime;
                     
-                    // Prevent multiple triggers
-                    setTimeout(() => {
-                        isShaking = false;
-                    }, 2000);
+                    const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+                    
+                    // Lower threshold for better detection
+                    if (speed > 400 && !isShaking) { // Reduced from 800
+                        console.log('Shake detected! Speed:', speed);
+                        isShaking = true;
+                        shakeCount++;
+                        triggerShakeEffect();
+                        
+                        // Prevent multiple triggers
+                        setTimeout(() => {
+                            isShaking = false;
+                        }, 2000);
+                    }
+                    
+                    lastX = current.x;
+                    lastY = current.y;
+                    lastZ = current.z;
                 }
-                
-                lastX = current.x;
-                lastY = current.y;
-                lastZ = current.z;
-            }
-        });
+            });
+        }
+    } else {
+        console.log('DeviceMotionEvent not supported');
     }
     
-    // Fallback for devices without motion sensors
-    let shakeStartTime = 0;
-    let shakeCount2 = 0;
+    // Improved touch-based shake detection
+    let touchCount = 0;
+    let lastTouchTime = 0;
     
-    document.addEventListener('touchstart', function() {
-        shakeStartTime = new Date().getTime();
+    document.addEventListener('touchstart', function(e) {
+        const currentTime = new Date().getTime();
+        
+        // Reset count if too much time has passed
+        if (currentTime - lastTouchTime > 1000) {
+            touchCount = 0;
+        }
+        
+        touchCount++;
+        lastTouchTime = currentTime;
+        
+        console.log('Touch detected, count:', touchCount);
+        
+        // Trigger after 3 quick touches
+        if (touchCount >= 3) {
+            console.log('Touch shake triggered!');
+            triggerShakeEffect();
+            touchCount = 0;
+        }
     });
     
-    document.addEventListener('touchend', function() {
-        const shakeEndTime = new Date().getTime();
-        const shakeDuration = shakeEndTime - shakeStartTime;
+    // Alternative: Double tap detection
+    let lastTapTime = 0;
+    let tapCount = 0;
+    
+    document.addEventListener('touchend', function(e) {
+        const currentTime = new Date().getTime();
+        const timeDiff = currentTime - lastTapTime;
         
-        if (shakeDuration < 200) {
-            shakeCount2++;
-            if (shakeCount2 >= 3) {
+        if (timeDiff < 300 && timeDiff > 50) { // Between 50ms and 300ms
+            tapCount++;
+            if (tapCount >= 2) {
+                console.log('Double tap shake triggered!');
                 triggerShakeEffect();
-                shakeCount2 = 0;
+                tapCount = 0;
             }
+        } else {
+            tapCount = 1;
         }
+        
+        lastTapTime = currentTime;
     });
     
     // Show shake instructions only on mobile devices
@@ -741,13 +792,14 @@ function initializeShakeDetection() {
         
         if (isMobile && shakeInstructions) {
             shakeInstructions.style.display = 'block';
+            shakeInstructions.innerHTML = '<span class="shake-text">📱 Shake your phone OR tap 3 times for birthday magic! 🎂</span>';
             
-            // Hide instructions after 8 seconds
+            // Hide instructions after 10 seconds
             setTimeout(() => {
                 if (shakeInstructions) {
                     shakeInstructions.style.display = 'none';
                 }
-            }, 8000);
+            }, 10000);
         } else if (shakeInstructions) {
             // Hide instructions on desktop
             shakeInstructions.style.display = 'none';
@@ -759,6 +811,8 @@ function initializeShakeDetection() {
     
     // Trigger shake effects
     function triggerShakeEffect() {
+        console.log('Triggering shake effects...');
+        
         // Play shake sound if available
         if (window.musicPlayer && window.musicPlayer.clickSound) {
             window.musicPlayer.clickSound.currentTime = 0;

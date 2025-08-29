@@ -1064,3 +1064,102 @@ body {
         opacity: 1;
     }
 }
+
+/* Special Birthday Photo Section */
+.birthday-photo-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(0,180,219,0.1) 0%, rgba(0,212,170,0.1) 100%);
+    border-radius: 20px;
+    border: 2px solid rgba(0,180,219,0.3);
+    text-align: center;
+}
+
+.photo-title {
+    font-size: 1.8rem;
+    color: #00b4db;
+    margin-bottom: 25px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.birthday-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.collage-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.collage-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+.photo-description {
+    color: #333;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.photo-description p {
+    margin: 8px 0;
+    font-weight: 500;
+}
+
+/* Responsive design for birthday photo */
+@media (max-width: 768px) {
+    .birthday-photo-section {
+        margin-top: 30px;
+        padding: 20px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    
+    .photo-title {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+    
+    .photo-description {
+        font-size: 1rem;
+    }
+    
+    .collage-image {
+        max-width: 95%;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .birthday-photo-section {
+        margin-top: 25px;
+        padding: 15px;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+    
+    .photo-title {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    
+    .photo-description {
+        font-size: 0.9rem;
+    }
+    
+    .photo-description p {
+        margin: 6px 0;
+    }
+    
+    .collage-image {
+        max-width: 100%;
+        border-radius: 10px;
+    }
+}

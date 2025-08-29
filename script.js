@@ -489,6 +489,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize Starry Wish System
     initializeStarryWish();
+    
+    // Initialize Mobile Shake Detection
+    initializeShakeDetection();
 });
 
 // Starry Wish System
@@ -637,35 +640,208 @@ function initializeStarryWish() {
         }
     `;
     document.head.appendChild(style);
+}
+
+// Mobile Shake Detection System
+function initializeShakeDetection() {
+    const shakeContainer = document.getElementById('shakeContainer');
+    const shakeInstructions = document.getElementById('shakeInstructions');
+    let lastUpdate = 0;
+    let lastX = 0, lastY = 0, lastZ = 0;
+    let shakeCount = 0;
+    let isShaking = false;
     
-    // Add welcome message
-    setTimeout(() => {
-        const welcomeDiv = document.createElement('div');
-        welcomeDiv.style.cssText = `
+    // Check if device supports motion sensors
+    if (window.DeviceMotionEvent) {
+        window.addEventListener('devicemotion', function(event) {
+            const current = event.accelerationIncludingGravity;
+            if (!current) return;
+            
+            const curTime = new Date().getTime();
+            if ((curTime - lastUpdate) > 100) {
+                const diffTime = curTime - lastUpdate;
+                lastUpdate = curTime;
+                
+                const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+                
+                if (speed > 800 && !isShaking) {
+                    isShaking = true;
+                    shakeCount++;
+                    triggerShakeEffect();
+                    
+                    // Prevent multiple triggers
+                    setTimeout(() => {
+                        isShaking = false;
+                    }, 2000);
+                }
+                
+                lastX = current.x;
+                lastY = current.y;
+                lastZ = current.z;
+            }
+        });
+    }
+    
+    // Fallback for devices without motion sensors
+    let shakeStartTime = 0;
+    let shakeCount2 = 0;
+    
+    document.addEventListener('touchstart', function() {
+        shakeStartTime = new Date().getTime();
+    });
+    
+    document.addEventListener('touchend', function() {
+        const shakeEndTime = new Date().getTime();
+        const shakeDuration = shakeEndTime - shakeStartTime;
+        
+        if (shakeDuration < 200) {
+            shakeCount2++;
+            if (shakeCount2 >= 3) {
+                triggerShakeEffect();
+                shakeCount2 = 0;
+            }
+        }
+    });
+    
+    // Show shake instructions only on mobile devices
+    function showShakeInstructions() {
+        // Check if it's a mobile device
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile && shakeInstructions) {
+            shakeInstructions.style.display = 'block';
+            
+            // Hide instructions after 8 seconds
+            setTimeout(() => {
+                if (shakeInstructions) {
+                    shakeInstructions.style.display = 'none';
+                }
+            }, 8000);
+        } else if (shakeInstructions) {
+            // Hide instructions on desktop
+            shakeInstructions.style.display = 'none';
+        }
+    }
+    
+    // Show instructions after a delay
+    setTimeout(showShakeInstructions, 4000);
+    
+    // Trigger shake effects
+    function triggerShakeEffect() {
+        // Play shake sound if available
+        if (window.musicPlayer && window.musicPlayer.clickSound) {
+            window.musicPlayer.clickSound.currentTime = 0;
+            window.musicPlayer.clickSound.play().catch(() => {});
+        }
+        
+        // Create birthday cake effect
+        createBirthdayCake();
+        
+        // Create confetti rain
+        createConfettiRain();
+        
+        // Create fireworks
+        createFireworks();
+        
+        // Show shake celebration message
+        showShakeMessage();
+    }
+    
+    // Create birthday cake effect
+    function createBirthdayCake() {
+        const cake = document.createElement('div');
+        cake.className = 'birthday-cake';
+        cake.innerHTML = '🎂';
+        cake.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+        cake.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+        
+        shakeContainer.appendChild(cake);
+        
+        // Remove cake after animation
+        setTimeout(() => {
+            if (cake.parentNode) {
+                cake.parentNode.removeChild(cake);
+            }
+        }, 3000);
+    }
+    
+    // Create confetti rain
+    function createConfettiRain() {
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                
+                shakeContainer.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 3000);
+            }, i * 50);
+        }
+    }
+    
+    // Create fireworks
+    function createFireworks() {
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                firework.style.left = Math.random() * window.innerWidth + 'px';
+                firework.style.top = Math.random() * (window.innerHeight / 2) + 'px';
+                
+                shakeContainer.appendChild(firework);
+                
+                // Remove firework after animation
+                setTimeout(() => {
+                    if (firework.parentNode) {
+                        firework.parentNode.removeChild(firework);
+                    }
+                }, 2000);
+            }, i * 300);
+        }
+    }
+    
+    // Show shake celebration message
+    function showShakeMessage() {
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = `
             position: fixed;
-            top: 80px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
             color: white;
-            padding: 15px 25px;
-            border-radius: 15px;
-            font-size: 1rem;
-            z-index: 997;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            animation: slideInDown 0.8s ease-out;
+            padding: 20px 30px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: milestonePop 0.5s ease-out;
         `;
         
-        welcomeDiv.innerHTML = '🌟 Click anywhere to make a wish ✨';
+        messageDiv.innerHTML = `🎉 Shake Magic! 🎉<br><small>Birthday celebration activated!</small>`;
         
-        document.body.appendChild(welcomeDiv);
+        document.body.appendChild(messageDiv);
         
-        // Remove after 5 seconds
+        // Remove after 3 seconds
         setTimeout(() => {
-            if (welcomeDiv.parentNode) {
-                welcomeDiv.parentNode.removeChild(welcomeDiv);
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
             }
-        }, 5000);
-    }, 2000);
+        }, 3000);
+    }
+    
+    // Add keyboard shortcut for desktop testing
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 's' || e.key === 'S') {
+            triggerShakeEffect();
+        }
+    });
 }

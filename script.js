@@ -640,6 +640,37 @@ function initializeStarryWish() {
         }
     `;
     document.head.appendChild(style);
+    
+    // Add welcome message
+    setTimeout(() => {
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 1rem;
+            z-index: 997;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: slideInDown 0.8s ease-out;
+        `;
+        
+        welcomeDiv.innerHTML = '🌟 Click anywhere to make a wish ✨';
+        
+        document.body.appendChild(welcomeDiv);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (welcomeDiv.parentNode) {
+                welcomeDiv.parentNode.removeChild(welcomeDiv);
+            }
+        }, 5000);
+    }, 2000);
 }
 
 // Mobile Shake Detection System

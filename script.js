@@ -552,41 +552,45 @@ function initializeStarryWish() {
     document.addEventListener('click', function(e) {
         // Don't create stars on interactive elements
         if (e.target.closest('.music-player') || 
-            e.target.closest('.audio-status') || 
-            e.target.closest('.wish-counter') ||
             e.target.closest('.question-modal') ||
             e.target.closest('.video-modal') ||
             e.target.closest('.letter-envelope')) {
             return;
         }
         
-        // Create star at click position
-        const star = createStar(e.clientX, e.clientY);
-        
-        // Increment wish counter
-        wishCount++;
-        wishCounter.textContent = wishCount;
-        
-        // Add special effects for milestone wishes
-        if (wishCount % 10 === 0) {
-            // Create multiple stars for milestone
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    createStar(
-                        e.clientX + (Math.random() - 0.5) * 100,
-                        e.clientY + (Math.random() - 0.5) * 100
-                    );
-                }, i * 200);
-            }
-            
-            // Show milestone message
-            showMilestoneMessage(wishCount);
-        }
-        
-        // Add click sound effect
+        // Play click sound effect
         if (window.musicPlayer && window.musicPlayer.clickSound) {
             window.musicPlayer.clickSound.currentTime = 0;
             window.musicPlayer.clickSound.play().catch(() => {});
+        }
+        
+        // Create star at click position
+        const star = createStar(e.clientX, e.clientY);
+        
+        // Increment wish count
+        wishCount++;
+        
+        // Show milestone message every 10 wishes
+        if (wishCount % 10 === 0) {
+            // Add milestone animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes milestonePop {
+                    0% {
+                        transform: translate(-50%, -50%) scale(0);
+                        opacity: 0;
+                    }
+                    50% {
+                        transform: translate(-50%, -50%) scale(1.1);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translate(-50%, -50%) scale(1);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
         }
     });
     

@@ -486,4 +486,186 @@ class MusicPlayer {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize music player
     window.musicPlayer = new MusicPlayer();
+    
+    // Initialize Starry Wish System
+    initializeStarryWish();
 });
+
+// Starry Wish System
+function initializeStarryWish() {
+    const starryContainer = document.getElementById('starryContainer');
+    const wishCounter = document.getElementById('wishCount');
+    let wishCount = 0;
+    
+    // Wish messages for different wishes
+    const wishMessages = [
+        "May our love be forever sweet 💕",
+        "May all your dreams come true ✨",
+        "May we reunite soon 🌍",
+        "May every day be filled with joy 😊",
+        "May our future be even brighter 🌈",
+        "May your smile always shine 🌟",
+        "May our love last forever 💑",
+        "May all your birthday wishes come true 🎂",
+        "May we love each other eternally 💖",
+        "May your life be full of surprises 🎁"
+    ];
+    
+    // Create star function
+    function createStar(x, y) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = x + 'px';
+        star.style.top = y + 'px';
+        
+        // Random star properties
+        const size = Math.random() * 3 + 2;
+        const delay = Math.random() * 2;
+        const duration = Math.random() * 3 + 6;
+        
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.animationDelay = delay + 's';
+        star.style.animationDuration = duration + 's';
+        
+        // Add wish message tooltip
+        const wishMessage = wishMessages[Math.floor(Math.random() * wishMessages.length)];
+        star.title = wishMessage;
+        
+        // Add to container
+        starryContainer.appendChild(star);
+        
+        // Remove star after animation
+        setTimeout(() => {
+            if (star.parentNode) {
+                star.parentNode.removeChild(star);
+            }
+        }, (duration + delay) * 1000);
+        
+        return star;
+    }
+    
+    // Handle click events
+    document.addEventListener('click', function(e) {
+        // Don't create stars on interactive elements
+        if (e.target.closest('.music-player') || 
+            e.target.closest('.audio-status') || 
+            e.target.closest('.wish-counter') ||
+            e.target.closest('.question-modal') ||
+            e.target.closest('.video-modal') ||
+            e.target.closest('.letter-envelope')) {
+            return;
+        }
+        
+        // Create star at click position
+        const star = createStar(e.clientX, e.clientY);
+        
+        // Increment wish counter
+        wishCount++;
+        wishCounter.textContent = wishCount;
+        
+        // Add special effects for milestone wishes
+        if (wishCount % 10 === 0) {
+            // Create multiple stars for milestone
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    createStar(
+                        e.clientX + (Math.random() - 0.5) * 100,
+                        e.clientY + (Math.random() - 0.5) * 100
+                    );
+                }, i * 200);
+            }
+            
+            // Show milestone message
+            showMilestoneMessage(wishCount);
+        }
+        
+        // Add click sound effect
+        if (window.musicPlayer && window.musicPlayer.clickSound) {
+            window.musicPlayer.clickSound.currentTime = 0;
+            window.musicPlayer.clickSound.play().catch(() => {});
+        }
+    });
+    
+    // Show milestone message
+    function showMilestoneMessage(count) {
+        const milestoneDiv = document.createElement('div');
+        milestoneDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: milestonePop 0.5s ease-out;
+        `;
+        
+        milestoneDiv.innerHTML = `🎉 ${count}th Wish! 🎉<br><small>Keep wishing!</small>`;
+        
+        document.body.appendChild(milestoneDiv);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            if (milestoneDiv.parentNode) {
+                milestoneDiv.parentNode.removeChild(milestoneDiv);
+            }
+        }, 3000);
+    }
+    
+    // Add milestone animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes milestonePop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Add welcome message
+    setTimeout(() => {
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 1rem;
+            z-index: 997;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: slideInDown 0.8s ease-out;
+        `;
+        
+        welcomeDiv.innerHTML = '🌟 Click anywhere to make a wish ✨';
+        
+        document.body.appendChild(welcomeDiv);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (welcomeDiv.parentNode) {
+                welcomeDiv.parentNode.removeChild(welcomeDiv);
+            }
+        }, 5000);
+    }, 2000);
+}

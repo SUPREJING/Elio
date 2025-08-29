@@ -490,8 +490,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Starry Wish System
     initializeStarryWish();
     
-    // Initialize Mobile Shake Detection
-    initializeShakeDetection();
+    // Initialize Quick Click Detection System
+    initializeQuickClickDetection();
 });
 
 // Starry Wish System
@@ -673,147 +673,50 @@ function initializeStarryWish() {
     }, 2000);
 }
 
-// Mobile Shake Detection System
-function initializeShakeDetection() {
-    const shakeContainer = document.getElementById('shakeContainer');
-    const shakeInstructions = document.getElementById('shakeInstructions');
-    let lastUpdate = 0;
-    let lastX = 0, lastY = 0, lastZ = 0;
-    let shakeCount = 0;
-    let isShaking = false;
+// Quick Click Detection System
+function initializeQuickClickDetection() {
+    const effectsContainer = document.getElementById('effectsContainer');
+    let clickCount = 0;
+    let lastClickTime = 0;
+    const clickThreshold = 1000; // 1 second threshold
     
-    console.log('Initializing shake detection...');
-    
-    // Check if device supports motion sensors
-    if (window.DeviceMotionEvent) {
-        console.log('DeviceMotionEvent supported');
-        
-        // Request permission for iOS
-        if (typeof DeviceMotionEvent.requestPermission === 'function') {
-            console.log('Requesting motion permission...');
-            DeviceMotionEvent.requestPermission()
-                .then(permissionState => {
-                    console.log('Motion permission:', permissionState);
-                    if (permissionState === 'granted') {
-                        startMotionDetection();
-                    }
-                })
-                .catch(console.error);
-        } else {
-            startMotionDetection();
+    // Handle quick clicks
+    document.addEventListener('click', function(e) {
+        // Don't count clicks on interactive elements
+        if (e.target.closest('.music-player') || 
+            e.target.closest('.audio-status') || 
+            e.target.closest('.wish-counter') ||
+            e.target.closest('.question-modal') ||
+            e.target.closest('.video-modal') ||
+            e.target.closest('.letter-envelope')) {
+            return;
         }
         
-        function startMotionDetection() {
-            window.addEventListener('devicemotion', function(event) {
-                const current = event.accelerationIncludingGravity;
-                if (!current) return;
-                
-                const curTime = new Date().getTime();
-                if ((curTime - lastUpdate) > 50) { // Reduced from 100ms
-                    const diffTime = curTime - lastUpdate;
-                    lastUpdate = curTime;
-                    
-                    const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
-                    
-                    // Lower threshold for better detection
-                    if (speed > 400 && !isShaking) { // Reduced from 800
-                        console.log('Shake detected! Speed:', speed);
-                        isShaking = true;
-                        shakeCount++;
-                        triggerShakeEffect();
-                        
-                        // Prevent multiple triggers
-                        setTimeout(() => {
-                            isShaking = false;
-                        }, 2000);
-                    }
-                    
-                    lastX = current.x;
-                    lastY = current.y;
-                    lastZ = current.z;
-                }
-            });
-        }
-    } else {
-        console.log('DeviceMotionEvent not supported');
-    }
-    
-    // Improved touch-based shake detection
-    let touchCount = 0;
-    let lastTouchTime = 0;
-    
-    document.addEventListener('touchstart', function(e) {
         const currentTime = new Date().getTime();
         
         // Reset count if too much time has passed
-        if (currentTime - lastTouchTime > 1000) {
-            touchCount = 0;
+        if (currentTime - lastClickTime > clickThreshold) {
+            clickCount = 0;
         }
         
-        touchCount++;
-        lastTouchTime = currentTime;
+        clickCount++;
+        lastClickTime = currentTime;
         
-        console.log('Touch detected, count:', touchCount);
+        console.log(`Quick click ${clickCount}/5`);
         
-        // Trigger after 3 quick touches
-        if (touchCount >= 3) {
-            console.log('Touch shake triggered!');
-            triggerShakeEffect();
-            touchCount = 0;
+        // Trigger special effects after 5 quick clicks
+        if (clickCount >= 5) {
+            console.log('Quick click threshold reached! Triggering special effects!');
+            triggerSpecialEffects();
+            clickCount = 0; // Reset count
         }
     });
     
-    // Alternative: Double tap detection
-    let lastTapTime = 0;
-    let tapCount = 0;
-    
-    document.addEventListener('touchend', function(e) {
-        const currentTime = new Date().getTime();
-        const timeDiff = currentTime - lastTapTime;
+    // Trigger special effects
+    function triggerSpecialEffects() {
+        console.log('Triggering special effects...');
         
-        if (timeDiff < 300 && timeDiff > 50) { // Between 50ms and 300ms
-            tapCount++;
-            if (tapCount >= 2) {
-                console.log('Double tap shake triggered!');
-                triggerShakeEffect();
-                tapCount = 0;
-            }
-        } else {
-            tapCount = 1;
-        }
-        
-        lastTapTime = currentTime;
-    });
-    
-    // Show shake instructions only on mobile devices
-    function showShakeInstructions() {
-        // Check if it's a mobile device
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (isMobile && shakeInstructions) {
-            shakeInstructions.style.display = 'block';
-            shakeInstructions.innerHTML = '<span class="shake-text">📱 Shake your phone OR tap 3 times for birthday magic! 🎂</span>';
-            
-            // Hide instructions after 10 seconds
-            setTimeout(() => {
-                if (shakeInstructions) {
-                    shakeInstructions.style.display = 'none';
-                }
-            }, 10000);
-        } else if (shakeInstructions) {
-            // Hide instructions on desktop
-            shakeInstructions.style.display = 'none';
-        }
-    }
-    
-    // Show instructions after a delay
-    setTimeout(showShakeInstructions, 4000);
-    
-    // Trigger shake effects
-    function triggerShakeEffect() {
-        console.log('Triggering shake effects...');
-        
-        // Play shake sound if available
+        // Play click sound
         if (window.musicPlayer && window.musicPlayer.clickSound) {
             window.musicPlayer.clickSound.currentTime = 0;
             window.musicPlayer.clickSound.play().catch(() => {});
@@ -828,8 +731,11 @@ function initializeShakeDetection() {
         // Create fireworks
         createFireworks();
         
-        // Show shake celebration message
-        showShakeMessage();
+        // Create heart burst
+        createHeartBurst();
+        
+        // Show celebration message
+        showCelebrationMessage();
     }
     
     // Create birthday cake effect
@@ -840,14 +746,14 @@ function initializeShakeDetection() {
         cake.style.left = Math.random() * (window.innerWidth - 100) + 'px';
         cake.style.top = Math.random() * (window.innerHeight - 100) + 'px';
         
-        shakeContainer.appendChild(cake);
+        effectsContainer.appendChild(cake);
         
         // Remove cake after animation
         setTimeout(() => {
             if (cake.parentNode) {
                 cake.parentNode.removeChild(cake);
             }
-        }, 3000);
+        }, 2000);
     }
     
     // Create confetti rain
@@ -859,7 +765,7 @@ function initializeShakeDetection() {
                 confetti.style.left = Math.random() * window.innerWidth + 'px';
                 confetti.style.top = '-10px';
                 
-                shakeContainer.appendChild(confetti);
+                effectsContainer.appendChild(confetti);
                 
                 // Remove confetti after animation
                 setTimeout(() => {
@@ -880,7 +786,7 @@ function initializeShakeDetection() {
                 firework.style.left = Math.random() * window.innerWidth + 'px';
                 firework.style.top = Math.random() * (window.innerHeight / 2) + 'px';
                 
-                shakeContainer.appendChild(firework);
+                effectsContainer.appendChild(firework);
                 
                 // Remove firework after animation
                 setTimeout(() => {
@@ -892,41 +798,48 @@ function initializeShakeDetection() {
         }
     }
     
-    // Show shake celebration message
-    function showShakeMessage() {
+    // Create heart burst
+    function createHeartBurst() {
+        for (let i = 0; i < 12; i++) {
+            setTimeout(() => {
+                const heart = document.createElement('div');
+                heart.className = 'heart-burst';
+                heart.innerHTML = '💖';
+                heart.style.left = (window.innerWidth / 2 + (Math.random() - 0.5) * 200) + 'px';
+                heart.style.top = (window.innerHeight / 2 + (Math.random() - 0.5) * 200) + 'px';
+                
+                effectsContainer.appendChild(heart);
+                
+                // Remove heart after animation
+                setTimeout(() => {
+                    if (heart.parentNode) {
+                        heart.parentNode.removeChild(heart);
+                    }
+                }, 1500);
+            }, i * 100);
+        }
+    }
+    
+    // Show celebration message
+    function showCelebrationMessage() {
         const messageDiv = document.createElement('div');
-        messageDiv.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #ff6b6b, #feca57);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            z-index: 10000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: milestonePop 0.5s ease-out;
-        `;
-        
-        messageDiv.innerHTML = `🎉 Shake Magic! 🎉<br><small>Birthday celebration activated!</small>`;
+        messageDiv.className = 'celebration-message';
+        messageDiv.innerHTML = `🎉 Birthday Magic! 🎉<br><small>Special effects activated!</small>`;
         
         document.body.appendChild(messageDiv);
         
-        // Remove after 3 seconds
+        // Remove after 4 seconds
         setTimeout(() => {
             if (messageDiv.parentNode) {
                 messageDiv.parentNode.removeChild(messageDiv);
             }
-        }, 3000);
+        }, 4000);
     }
     
-    // Add keyboard shortcut for desktop testing
+    // Add keyboard shortcut for testing
     document.addEventListener('keydown', function(e) {
-        if (e.key === 's' || e.key === 'S') {
-            triggerShakeEffect();
+        if (e.key === 'b' || e.key === 'B') {
+            triggerSpecialEffects();
         }
     });
 }

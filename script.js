@@ -412,8 +412,7 @@ class MusicPlayer {
         this.audio.src = song.file;
         this.audio.load();
         
-        // Update current song display
-        document.getElementById('currentSong').textContent = song.name;
+
         
         // Only try to play if user has interacted
         if (this.userInteracted) {
@@ -457,27 +456,18 @@ class MusicPlayer {
     updatePlayerState() {
         const musicPlayer = document.getElementById('musicPlayer');
         const musicIcon = document.getElementById('musicIcon');
-        const audioStatus = document.getElementById('audioStatus');
-        const statusText = audioStatus.querySelector('.status-text');
         
         if (this.isPlaying && !this.isPaused) {
             musicPlayer.classList.add('playing');
             musicPlayer.classList.remove('paused');
             musicIcon.textContent = '🎵';
-            statusText.textContent = `Playing: ${this.playlist[this.currentIndex].name}`;
         } else if (this.isPaused) {
             musicPlayer.classList.add('paused');
             musicPlayer.classList.remove('playing');
             musicIcon.textContent = '⏸️';
-            statusText.textContent = `Paused: ${this.playlist[this.currentIndex].name}`;
         } else {
             musicPlayer.classList.remove('playing', 'paused');
             musicIcon.textContent = '🎵';
-            if (this.userInteracted) {
-                statusText.textContent = 'Click to start music';
-            } else {
-                statusText.textContent = 'Click anywhere to start music';
-            }
         }
     }
 }
@@ -497,7 +487,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Starry Wish System
 function initializeStarryWish() {
     const starryContainer = document.getElementById('starryContainer');
-    const wishCounter = document.getElementById('wishCount');
     let wishCount = 0;
     
     // Wish messages for different wishes
@@ -683,63 +672,38 @@ function initializeQuickClickDetection() {
     let clickCount = 0;
     let lastClickTime = 0;
     const clickThreshold = 1000; // 1 second threshold
-    
-    // Handle quick clicks
+    let hasShownBirthdayMagic = false; // Track if Birthday Magic has been shown
+
     document.addEventListener('click', function(e) {
         // Don't count clicks on interactive elements
-        if (e.target.closest('.music-player') || 
-            e.target.closest('.audio-status') || 
-            e.target.closest('.wish-counter') ||
+        if (e.target.closest('.music-player') ||
             e.target.closest('.question-modal') ||
             e.target.closest('.video-modal') ||
             e.target.closest('.letter-envelope')) {
             return;
         }
-        
         const currentTime = new Date().getTime();
-        
-        // Reset count if too much time has passed
         if (currentTime - lastClickTime > clickThreshold) {
             clickCount = 0;
         }
-        
         clickCount++;
         lastClickTime = currentTime;
-        
-        console.log(`Quick click ${clickCount}/5`);
-        
-        // Trigger special effects after 5 quick clicks
         if (clickCount >= 5) {
-            console.log('Quick click threshold reached! Triggering special effects!');
             triggerSpecialEffects();
-            clickCount = 0; // Reset count
+            clickCount = 0;
         }
     });
-    
+
     // Trigger special effects
     function triggerSpecialEffects() {
-        console.log('Triggering special effects...');
-        
-        // Play click sound
-        if (window.musicPlayer && window.musicPlayer.clickSound) {
-            window.musicPlayer.clickSound.currentTime = 0;
-            window.musicPlayer.clickSound.play().catch(() => {});
-        }
-        
-        // Create birthday cake effect
         createBirthdayCake();
-        
-        // Create confetti rain
         createConfettiRain();
-        
-        // Create fireworks
         createFireworks();
-        
-        // Create heart burst
         createHeartBurst();
-        
-        // Show celebration message
-        showCelebrationMessage();
+        if (!hasShownBirthdayMagic) {
+            showCelebrationMessage();
+            hasShownBirthdayMagic = true;
+        }
     }
     
     // Create birthday cake effect
@@ -828,16 +792,16 @@ function initializeQuickClickDetection() {
     function showCelebrationMessage() {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'celebration-message';
-        messageDiv.innerHTML = `🎉 Birthday Magic! 🎉<br><small>Special effects activated!</small>`;
+        messageDiv.innerHTML = `🎉 Birthday Magic! 🎉`;
         
         document.body.appendChild(messageDiv);
         
-        // Remove after 4 seconds
+        // Remove after 3 seconds
         setTimeout(() => {
             if (messageDiv.parentNode) {
                 messageDiv.parentNode.removeChild(messageDiv);
             }
-        }, 4000);
+        }, 3000);
     }
     
     // Add keyboard shortcut for testing
